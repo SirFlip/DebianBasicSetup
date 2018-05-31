@@ -51,11 +51,16 @@ promt_install(){
   echo
 }
 
+apt_install(){
+  promt_install "Do you wish to install '$@'?" apt -y install $@
+}
+
 promt_install "Do you wish to install the IP-issue-screen?" install_issue
 promt_install "Do you wish to install the dynamic login motd?" install_motd
-promt_install "Do you wish to install these programs (htop nload iotop curl atop iftop)?" apt -y install htop nload iotop curl atop iftop
-promt_install "Do you wish to install glances?" apt -y install glances
 promt_install "Do you wish to auto edit .bashrc?" auto_edit_bashrc
-promt_install "Do you wish to install open-vm-tools?" apt -y install open-vm-tools
+apt_install htop nload iotop curl atop iftop tree
+apt_install glances
+apt_install open-vm-tools
+apt_install net-tools
 
 
