@@ -63,6 +63,6 @@ promt_install "Do you wish to install the dynamic login motd?" install_motd
 promt_install "Do you wish to install these programs (htop nload iotop curl atop iftop)?" apt -y install htop nload iotop curl atop iftop
 promt_install "Do you wish to install glances?" apt -y install glances
 promt_install "Do you wish to auto edit .bashrc?" auto_edit_bashrc
-promt_install "Do you wish to install open-vm-tools?" apt -y open-vm-tools
+promt_install "Do you wish to install open-vm-tools?" apt -y install open-vm-tools
 
 
