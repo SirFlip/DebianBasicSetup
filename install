@@ -34,16 +34,7 @@ install_motd(){
 }
 
 auto_edit_bashrc(){
-  echo "PS1='\${debian_chroot:+(\$debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\\$ '" | tee -a ~/.bashrc
-  echo "export LS_OPTIONS='--color=auto'" | tee -a ~/.bashrc
-  echo "eval \"\`dircolors\`\"" | tee -a ~/.bashrc
-  echo "alias ls='ls $LS_OPTIONS'" | tee -a ~/.bashrc
-  echo "alias ll='ls $LS_OPTIONS -lh'" | tee -a ~/.bashrc
-  echo "alias l='ls $LS_OPTIONS -lhA'" | tee -a ~/.bashrc
-  echo "alias cd..='cd ..'" | tee -a ~/.bashrc
-  echo "Please check the file"
-  read -p "Press enter to continue"
-  nano ~/.bashrc
+  cp templates/.bashrc ~/.bashrc
   . ~/.bashrc
   echo "Finished"
 }
