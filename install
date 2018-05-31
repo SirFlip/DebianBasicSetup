@@ -19,8 +19,10 @@ install_motd(){
   echo "Install motd-screen"
   apt -y install figlet python-apt
   rm -f /etc/update-motd.d/10-uname
+  truncate -s 0 /etc/motd
   cp -R motd-screen/* /etc/update-motd.d/
-  chmod +x /etc/update-motd.d/
+  chmod -R +x /etc/update-motd.d/
+  for f in /etc/update-motd.d/*; do $f; done
   echo "Look for these lines and mach them:"
   echo "PrintMotd no"
   echo "PrintLastLog yes"
