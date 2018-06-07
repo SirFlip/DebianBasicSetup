@@ -19,7 +19,7 @@ install_issue(){
 install_motd(){
   echo "Install motd-screen"
   apt -y install figlet python-apt
-  rm -f /etc/update-motd.d/10-uname
+  rm -f /etc/update-motd.d/*
   truncate -s 0 /etc/motd
   cp -R motd-screen/* /etc/update-motd.d/
   chmod -R +x /etc/update-motd.d/
