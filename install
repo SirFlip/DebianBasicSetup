@@ -54,7 +54,8 @@ promt_install(){
 }
 
 apt_install(){
-  promt_install "Do you wish to install '$@'?" apt -y install $@
+  TO_INSTALL=$@
+  promt_install "Do you wish to install $TO_INSTALL?" apt -y install $TO_INSTALL
 }
 
 promt_install "Do you wish to install the IP-issue-screen?" install_issue
