@@ -1,0 +1,8 @@
+#!/bin/sh
+
+#sleep 10
+cp /etc/issue-standard /etc/issue
+echo -n "IP-Address: " >> /etc/issue
+/usr/local/bin/get-ip-address >> /etc/issue
+echo "" >> /etc/issue
+systemctl restart getty@tty1

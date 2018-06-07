@@ -6,12 +6,13 @@ install_issue(){
   cp issue-screen/get-ip-address /usr/local/bin/get-ip-address
   chmod +x /usr/local/bin/get-ip-address
   
-  rm -f /etc/network/if-up.d/show-ip-address
-  cp issue-screen/show-ip-address /usr/local/bin/show-ip-address
-  chmod +x /usr/local/bin/show-ip-address
+  rm -f /usr/local/bin/refresh-issue
+  cp issue-screen/refresh-issue /usr/local/bin/refresh-issue
+  chmod +x /usr/local/bin/refresh-issue
   
   mv /etc/issue /etc/issue-standard
-  /usr/local/bin/show-ip-address
+  /usr/local/bin/refresh-issue
+  (crontab -u root -l ; echo "@reboot /usr/local/bin/refresh-issue") | crontab -u root -
   echo "Finished"
 }
 
@@ -30,6 +31,7 @@ install_motd(){
   read -p "Press enter to continue"
   nano /etc/ssh/sshd_config
   service ssh reload
+  (crontab -u root -l ; echo "@reboot /usr/bin/apt-get update") | crontab -u root -
   echo "Finished"
 }
 
