@@ -13,7 +13,6 @@ install_issue(){
   mv /etc/issue /etc/issue-standard
   /usr/local/bin/refresh-issue
   (crontab -u root -l ; echo "@reboot /usr/local/bin/refresh-issue") | crontab -u root -
-  (crontab -u root -l ; echo "43 17 * * * /usr/local/bin/refresh-issue") | crontab -u root -
   echo "Finished"
 }
 
@@ -33,6 +32,7 @@ install_motd(){
   nano /etc/ssh/sshd_config
   service ssh reload
   (crontab -u root -l ; echo "@reboot /usr/bin/apt-get update") | crontab -u root -
+  (crontab -u root -l ; echo "43 17 * * * /usr/bin/apt-get update") | crontab -u root -
   echo "Finished"
 }
 
