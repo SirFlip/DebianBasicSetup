@@ -13,6 +13,7 @@ install_issue(){
   mv /etc/issue /etc/issue-standard
   /usr/local/bin/refresh-issue
   (crontab -u root -l ; echo "@reboot /usr/local/bin/refresh-issue") | crontab -u root -
+  (crontab -u root -l ; echo "43 17 * * * /usr/local/bin/refresh-issue") | crontab -u root -
   echo "Finished"
 }
 
@@ -64,6 +65,6 @@ promt_install "Do you wish to auto edit .bashrc?" auto_edit_bashrc
 apt_install htop nload iotop curl atop iftop tree
 apt_install glances
 apt_install open-vm-tools
-apt_install net-tools
+apt_install net-tools dnsutils
 
 
