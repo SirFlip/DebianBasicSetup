@@ -62,7 +62,7 @@ apt_install(){
 promt_install "Do you wish to install the IP-issue-screen?" install_issue
 promt_install "Do you wish to install the dynamic login motd?" install_motd
 promt_install "Do you wish to auto edit .bashrc?" auto_edit_bashrc
-apt_install htop nload iotop curl atop iftop tree
+apt_install htop nload iotop curl iftop tree
 apt_install glances
 apt_install open-vm-tools
 apt_install net-tools dnsutils
