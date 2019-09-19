@@ -38,7 +38,7 @@ install_motd(){
 
 auto_edit_bashrc(){
   mv ~/.bashrc ~/.bashrc_bck
-  ln -s templates/.bashrc ~/.bashrc
+  ln -s $(readlink -f templates/.bashrc) ~/.bashrc
   . ~/.bashrc
   echo "Finished"
 }
