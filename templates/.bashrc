@@ -25,6 +25,7 @@ alias ll='ls $LS_OPTIONS -lh'
 alias l='ls $LS_OPTIONS -lhA'
 alias ip='ip -c'
 alias cd..='cd ..'
+alias myip='curl ipinfo.io'
 #alias less='less ++F'
 
 # Some more alias to avoid making mistakes:
