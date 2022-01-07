@@ -53,7 +53,7 @@ apt_pkg.init()
 # open the apt cache
 try:
     cache = apt_pkg.Cache(OpNullProgress())
-except SystemError, e:
+except SystemError as e:
     sys.stderr.write("Error: Opening the cache (%s)" % e)
     sys.exit(-1)
 
@@ -81,7 +81,7 @@ try:
 
     # then a standard upgrade
     depcache.upgrade()
-except SystemError, e:
+except SystemError as e:
     sys.stderr.write("Error: Couldn't mark the upgrade (%s)" % e)
     sys.exit(-1)
 
@@ -111,6 +111,6 @@ for pkg in cache.packages:
             security_upgrades += 1
             break
 
-print "%d updates to install." % upgrades
-print "%d are security updates." % security_upgrades
-print "" # leave a trailing blank line
+print("%d updates to install." % upgrades)
+print("%d are security updates." % security_upgrades)
+print("") # leave a trailing blank line
