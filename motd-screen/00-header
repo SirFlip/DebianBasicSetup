@@ -21,15 +21,23 @@
 #    with this program; if not, write to the Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+figlet -w 120 $(hostname)
+printf "\n"
+
+[ -r /etc/os-release ] && . /etc/os-release && DISTRIB_DESCRIPTION=$PRETTY_NAME
 [ -r /etc/lsb-release ] && . /etc/lsb-release
 
 if [ -z "$DISTRIB_DESCRIPTION" ] && [ -x /usr/bin/lsb_release ]; then
-        # Fall back to using the very slow lsb_release utility
+    echo " Fall back to using the very slow lsb_release utility"
+    cores=$(grep -c ^processor /proc/cpuinfo 2>/dev/null)
+    [ "$cores" -eq "0" ] && cores=1
+    threshold="${cores:-1}.0"
+    if [ $(awk 'BEGIN{ print "'`cut -f1 -d ' ' /proc/loadavg`'"<"'$threshold'" }')  -eq 1 ]; then
         DISTRIB_DESCRIPTION=$(lsb_release -s -d)
+    else
+        echo " System information disabled due to load higher than $threshold"
+    fi
 fi
-
-figlet -w 120 $(hostname)
-printf "\n"
 
 printf "Welcome to %s (%s).\n" "$DISTRIB_DESCRIPTION" "$(uname -r)"
 printf "\n"
