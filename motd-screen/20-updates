@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 #   20-updates - create the system updates section of the MOTD
 #   Copyright (c) 2013 Nick Charlton
