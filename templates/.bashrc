@@ -7,7 +7,7 @@ PS1="${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[38;5;15m\]\[$(
 # umask 022
 
 # Avoid duplicates
-HISTCONTROL=ignoredups:erasedups
+HISTCONTROL=ignorespace:ignoredups:erasedups
 # When the shell exits, append to the history file instead of overwriting it
 shopt -s histappend
 # After each command, append to the history file and reread it
