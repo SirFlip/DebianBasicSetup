@@ -1,53 +1,107 @@
 #!/bin/bash
 
+if [ "$(id -u)" -ne 0 ]; then
+  echo "Please run as root (e.g. sudo $0)"
+  exit 1
+fi
+
+# Work relative to the repository, regardless of where the script was started
+REPO_DIR="$(dirname "$(readlink -f "$0")")"
+cd "$REPO_DIR" || exit 1
+
+remove_root_cron(){
+  # Remove root crontab lines matching $1 (left over from older versions)
+  crontab -u root -l >/dev/null 2>&1 || return 0
+  crontab -u root -l | grep -v -- "$1" | crontab -u root -
+}
+
+cleanup_old_issue(){
+  # Older versions replaced /etc/issue and refreshed it via cron
+  if [ -f /etc/issue-standard ]; then
+    mv /etc/issue-standard /etc/issue
+  fi
+  rm -f /usr/local/bin/get-ip-address /usr/local/bin/refresh-issue
+  if command -v crontab >/dev/null 2>&1; then
+    remove_root_cron "/usr/local/bin/refresh-issue"
+    remove_root_cron "/usr/bin/apt-get update"
+  fi
+}
+
 install_issue(){
   echo "Install IP-issue-screen..."
-  rm -f /usr/local/bin/get-ip-address
-  cp issue-screen/get-ip-address /usr/local/bin/get-ip-address
-  chmod +x /usr/local/bin/get-ip-address
-  
-  rm -f /usr/local/bin/refresh-issue
-  cp issue-screen/refresh-issue /usr/local/bin/refresh-issue
-  chmod +x /usr/local/bin/refresh-issue
-  
-  mv /etc/issue /etc/issue-standard
-  /usr/local/bin/refresh-issue
-  (crontab -u root -l ; echo "@reboot /usr/local/bin/refresh-issue") | crontab -u root -
+  cleanup_old_issue
+  # agetty resolves \4 to the current IPv4 address and redraws on network changes
+  mkdir -p /etc/issue.d
+  cp issue-screen/ip.issue /etc/issue.d/ip.issue
   echo "Finished"
 }
 
 install_motd(){
   echo "Install motd-screen"
-  apt -y install figlet python3-apt
+  apt-get -y install figlet python3-apt
   rm -f /etc/update-motd.d/*
   truncate -s 0 /etc/motd
   cp -R motd-screen/* /etc/update-motd.d/
   chmod -R +x /etc/update-motd.d/
-  for f in /etc/update-motd.d/*; do $f; done
-  echo "Look for these lines and mach them:"
-  echo "PrintMotd no"
-  echo "PrintLastLog yes"
-  echo "#Banner /etc/issue"
-  read -p "Press enter to continue"
-  nano /etc/ssh/sshd_config
-  service ssh reload
-  (crontab -u root -l ; echo "@reboot /usr/bin/apt-get update") | crontab -u root -
-  (crontab -u root -l ; echo "43 17 * * * /usr/bin/apt-get update") | crontab -u root -
+  run-parts /etc/update-motd.d/
+
+  if [ -d /etc/ssh/sshd_config.d ]; then
+    # sshd uses the first value it finds and includes sshd_config.d first
+    printf 'PrintMotd no\nPrintLastLog yes\n' > /etc/ssh/sshd_config.d/10-motd.conf
+    if sshd -t; then
+      systemctl try-reload-or-restart ssh.service
+    else
+      echo "sshd config test failed, removing /etc/ssh/sshd_config.d/10-motd.conf"
+      rm -f /etc/ssh/sshd_config.d/10-motd.conf
+    fi
+  else
+    echo "No /etc/ssh/sshd_config.d found, sshd config left unchanged"
+  fi
+
+  # apt-daily.timer already refreshes the package lists, cron is not needed
+  if command -v crontab >/dev/null 2>&1; then
+    remove_root_cron "/usr/bin/apt-get update"
+  fi
   echo "Finished"
+}
+
+link_bashrc(){
+  local user="$1"
+  local home
+  home="$(getent passwd "$user" | cut -d: -f6)"
+  local target="$home/.bashrc"
+  local src="$REPO_DIR/templates/.bashrc"
+
+  if [ "$(readlink -f "$target")" = "$src" ]; then
+    echo "$target is already linked"
+    return
+  fi
+  if [ -e "$target" ] || [ -L "$target" ]; then
+    local backup="$home/.bashrc_bck"
+    [ -e "$backup" ] && backup="$backup.$(date +%Y%m%d%H%M%S)"
+    mv "$target" "$backup"
+    echo "Old .bashrc saved as $backup"
+  fi
+  ln -s "$src" "$target"
+  chown -h "$user": "$target"
+  echo "Linked $target"
 }
 
 auto_edit_bashrc(){
-  mv ~/.bashrc ~/.bashrc_bck
-  ln -s $(readlink -f templates/.bashrc) ~/.bashrc
-  . ~/.bashrc
-  echo "Finished"
+  link_bashrc root
+  if [ -n "$SUDO_USER" ] && [ "$SUDO_USER" != root ]; then
+    promt_install "Also link .bashrc for $SUDO_USER?" link_bashrc "$SUDO_USER"
+  fi
+  echo "Finished (takes effect in new shells)"
 }
 
 promt_install(){
+  local question="$1"
+  shift
   while true; do
-    read -p "$1 (y/n)" yn
+    read -r -p "$question (y/n)" yn
     case $yn in
-        [Yy]* ) shift; eval $@ ; break;;
+        [Yy]* ) "$@" ; break;;
         [Nn]* ) break;;
         * ) echo "Please answer yes or no.";;
     esac
@@ -56,17 +110,19 @@ promt_install(){
 }
 
 apt_install(){
-  TO_INSTALL=$@
-  promt_install "Do you wish to install $TO_INSTALL?" apt -y install $TO_INSTALL
+  promt_install "Do you wish to install $*?" apt-get -y install "$@"
 }
+
+echo "Updating package lists..."
+apt-get update
 
 promt_install "Do you wish to install the IP-issue-screen?" install_issue
 promt_install "Do you wish to install the dynamic login motd?" install_motd
 promt_install "Do you wish to auto edit .bashrc?" auto_edit_bashrc
 apt_install htop nload iotop curl iftop tree ncdu
 apt_install glances
-apt_install open-vm-tools
-apt_install dnsutils
+if [ "$(systemd-detect-virt 2>/dev/null)" = "vmware" ]; then
+  apt_install open-vm-tools
+fi
+apt_install bind9-dnsutils
 apt_install net-tools
-
-

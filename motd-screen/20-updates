@@ -21,11 +21,9 @@
 #   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import sys
-import subprocess
 import apt_pkg
 
-DISTRO = subprocess.Popen(["lsb_release", "-c", "-s"],
-                          stdout=subprocess.PIPE).communicate()[0].strip()
+SECURITY_ORIGINS = ("Debian", "Ubuntu")
 
 class OpNullProgress(object):
     '''apt progress handler which supresses any output.'''
@@ -34,17 +32,17 @@ class OpNullProgress(object):
     def done(self):
         pass
 
-def is_security_upgrade(pkg):
+def is_security_upgrade(ver):
     '''
-    Checks to see if a package comes from a DISTRO-security source.
+    Checks to see if a version comes from a *-security source.
+    The archive is the suite (e.g. "stable-security") on Debian and the
+    codename (e.g. "noble-security") on Ubuntu, so only the suffix is checked.
     '''
-    security_package_sources = [("Ubuntu", "%s-security" % DISTRO),
-                               ("Debian", "%s-security" % DISTRO)]
-
-    for (file, index) in pkg.file_list:
-        for origin, archive in security_package_sources:
-            if (file.archive == archive and file.origin == origin):
-                return True
+    for (file, index) in ver.file_list:
+        if file.origin in SECURITY_ORIGINS and file.archive.endswith("-security"):
+            return True
+        if file.label == "Debian-Security":
+            return True
     return False
 
 # init apt and config
@@ -102,6 +100,7 @@ for pkg in cache.packages:
     # keep another count for security upgrades
     if is_security_upgrade(candidate):
         security_upgrades += 1
+        continue
 
     # double check for security upgrades masked by another package
     for version in pkg.version_list:

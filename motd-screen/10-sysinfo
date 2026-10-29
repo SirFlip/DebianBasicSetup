@@ -21,9 +21,9 @@
 
 date=`date`
 load=`cat /proc/loadavg | awk '{print $1}'`
-root_usage=`df -h / | awk '/\// {print $(NF-1)}'`
+root_usage=`df --output=pcent / | tail -n 1 | tr -d ' '`
 memory_usage=`free -m | awk '/Mem/ { printf("%3.1f%%", $3/$2*100) }'`
-swap_usage=`free -m | awk '/Swap/ { printf("%3.1f%%", $3/$2*100) }'`
+swap_usage=`free -m | awk '/Swap/ { if ($2 > 0) printf("%3.1f%%", $3/$2*100); else print "none" }'`
 users=`users | wc -w`
 
 echo "System information as of: $date"

@@ -1,9 +1,21 @@
 # ~/.bashrc: executed by bash(1) for non-login shells.
 
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# Git prompt: load it if git is installed, otherwise use a no-op
+if ! type __git_ps1 >/dev/null 2>&1 && [ -r /usr/lib/git-core/git-sh-prompt ]; then
+    . /usr/lib/git-core/git-sh-prompt
+fi
+type __git_ps1 >/dev/null 2>&1 || __git_ps1() { :; }
+
 # Note: PS1 and umask are already set in /etc/profile. You should not
 # need this unless you want different defaults for root.
 # PS1='${debian_chroot:+($debian_chroot)}\h:\w\$ '
-PS1="${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[38;5;15m\]\[\033[0m\]:\[\033[33m\]\w\[\033[38;5;15m\]\[\033[0m\] \[\033[01;34m\]\$??\[\033[36m\]\`__git_ps1\`\[\033[0m\]\[\033[38;5;15m\]\\$ "
+PS1="${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[38;5;15m\]\[\033[0m\]:\[\033[33m\]\w\[\033[38;5;15m\]\[\033[0m\] \[\033[01;34m\]\$?\[\033[36m\]\`__git_ps1\`\[\033[0m\]\[\033[38;5;15m\]\\$ "
 # umask 022
 
 # Avoid duplicates
